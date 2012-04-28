@@ -20,40 +20,8 @@ public class Main {
         System.out.println("Server started on *:" + server.getLocalPort());
         while (true) {
             try {
-                Socket connection = server.accept();
-                System.out.println(connection.getInetAddress() + " has connected to the server");
-                new Connection(connection).start();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    private static String readString(DataInputStream in) throws IOException {
-        int len = in.readShort();
-        char[] chars = new char[len];
-        for (int i = 0; i < len; i++) {
-            chars[i] = in.readChar();
-        }
-        return new String(chars);
-    }
-
-    private static void writeString(DataOutputStream out, String str) throws IOException {
-        out.writeShort(str.length());
-        out.writeChars(str);
-    }
-
-    private static class Connection extends Thread {
-
-        private final Socket client;
-
-        protected Connection(Socket client) {
-            this.client = client;
-        }
-
-        @Override
-        public void run() {
-            try {
+                Socket client = server.accept();
+                System.out.println(client.getInetAddress() + " has connected to the server");
                 DataInputStream in = new DataInputStream(client.getInputStream());
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
                 String message;
@@ -95,5 +63,19 @@ public class Main {
                 ex.printStackTrace();
             }
         }
+    }
+
+    private static String readString(DataInputStream in) throws IOException {
+        int len = in.readShort();
+        char[] chars = new char[len];
+        for (int i = 0; i < len; i++) {
+            chars[i] = in.readChar();
+        }
+        return new String(chars);
+    }
+
+    private static void writeString(DataOutputStream out, String str) throws IOException {
+        out.writeShort(str.length());
+        out.writeChars(str);
     }
 }
