@@ -7,11 +7,14 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import sun.misc.BASE64Encoder;
 
 public class Main {
 
     private static ServerSocket server;
+    private static final ExecutorService pool = Executors.newFixedThreadPool(15);
     private static final Random KEY = new Random();
     private static final String SALT = "HEHE IT WOULD BE FUNNY IF OUR REAL SECRET KEY WENT HERE";
 
@@ -20,8 +23,40 @@ public class Main {
         System.out.println("Server started on *:" + server.getLocalPort());
         while (true) {
             try {
-                Socket client = server.accept();
-                System.out.println(client.getInetAddress() + " has connected to the server");
+                Socket connection = server.accept();
+                System.out.println(connection.getInetAddress() + " has connected to the server");
+                pool.submit(new Connection(connection));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private static String readString(DataInputStream in) throws IOException {
+        int len = in.readShort();
+        char[] chars = new char[len];
+        for (int i = 0; i < len; i++) {
+            chars[i] = in.readChar();
+        }
+        return new String(chars);
+    }
+
+    private static void writeString(DataOutputStream out, String str) throws IOException {
+        out.writeShort(str.length());
+        out.writeChars(str);
+    }
+
+    private static class Connection implements Runnable {
+
+        private final Socket client;
+
+        protected Connection(Socket client) {
+            this.client = client;
+        }
+
+        @Override
+        public void run() {
+            try {
                 DataInputStream in = new DataInputStream(client.getInputStream());
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
                 String message;
@@ -63,19 +98,5 @@ public class Main {
                 ex.printStackTrace();
             }
         }
-    }
-
-    private static String readString(DataInputStream in) throws IOException {
-        int len = in.readShort();
-        char[] chars = new char[len];
-        for (int i = 0; i < len; i++) {
-            chars[i] = in.readChar();
-        }
-        return new String(chars);
-    }
-
-    private static void writeString(DataOutputStream out, String str) throws IOException {
-        out.writeShort(str.length());
-        out.writeChars(str);
     }
 }
