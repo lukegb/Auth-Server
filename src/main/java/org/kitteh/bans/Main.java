@@ -1,15 +1,16 @@
 package org.kitteh.bans;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import sun.misc.BASE64Encoder;
 
 public class Main {
 
@@ -24,6 +25,7 @@ public class Main {
         while (true) {
             try {
                 Socket connection = server.accept();
+                connection.setSoTimeout(2000); // allow only a 2 second delay *PER* read call
                 System.out.println(connection.getInetAddress() + " has connected to the server");
                 pool.submit(new Connection(connection));
             } catch (Exception ex) {
@@ -49,9 +51,29 @@ public class Main {
     private static class Connection implements Runnable {
 
         private final Socket client;
+        private static final char[] BASE58_SET = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ".toCharArray();
+        private static final BigInteger BASE58_SET_LEN = BigInteger.valueOf((long)BASE58_SET.length);
 
         protected Connection(Socket client) {
             this.client = client;
+        }
+
+        private String base58Encode(BigInteger toGo) {
+            StringBuffer sb = new StringBuffer();
+
+            while (toGo.compareTo(BigInteger.ZERO) == 1) {
+                sb.append(BASE58_SET[toGo.mod(BASE58_SET_LEN).intValue()]);
+                toGo = toGo.divide(BASE58_SET_LEN);
+            }
+            return sb.toString();
+        }
+
+        public String createSessionKey(String username) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+            long epoch = System.currentTimeMillis() / 1000;
+            String digest = base58Encode(new BigInteger(1, MessageDigest.getInstance("SHA-512").digest((username + ";" + SALT + ";" + String.valueOf(epoch)).getBytes("UTF-8"))));
+            String epochTime = base58Encode(BigInteger.valueOf(epoch));
+
+            return digest.substring(1, 6) + epochTime;
         }
 
         @Override
@@ -85,7 +107,7 @@ public class Main {
                     mcAuth.close();
                     //
                     if (reply.equals("YES")) {
-                        message = "Your unique code is: " + new BASE64Encoder().encode(MessageDigest.getInstance("SHA-512").digest((username + SALT).getBytes("UTF-8"))).substring(0, 8);
+                        message = "Your unique code is: " + this.createSessionKey(username.toLowerCase()) + " - this key is valid for the next 10 minutes.";
                     } else {
                         message = "Account not premium! mbaxter will eat your face!";
                     }
