@@ -1,0 +1,60 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.kitteh</groupId>
+    <artifactId>banconcept-server</artifactId>
+    <version>dev-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>BanConcept-Server</name>
+    <description>The unique key generator for BanConcept!</description>
+    <url>https://github.com/BanConcept/BanConcept-Server</url>
+
+    <distributionManagement>
+        <repository>
+            <id>kittehReleases</id>
+            <name>Kitteh Releases</name>
+            <url>http://repo.kitteh.org/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>kittehSnapshots</id>
+            <name>Kitteh Snapshots</name>
+            <url>http://repo.kitteh.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <build.number>Unknown</build.number>
+    </properties>
+
+    <build>
+        <finalName>${project.name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Main-Class>org.kitteh.bans.Main</Main-Class>
+                            <Implementation-Version>${build.number}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
