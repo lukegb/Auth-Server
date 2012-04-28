@@ -59,7 +59,7 @@ public class Main {
         }
 
         private String base58Encode(BigInteger toGo) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             while (toGo.compareTo(BigInteger.ZERO) == 1) {
                 sb.append(BASE58_SET[toGo.mod(BASE58_SET_LEN).intValue()]);
@@ -72,6 +72,9 @@ public class Main {
             long epoch = System.currentTimeMillis() / 1000;
             String digest = base58Encode(new BigInteger(1, MessageDigest.getInstance("SHA-512").digest((username + ";" + SALT + ";" + String.valueOf(epoch)).getBytes("UTF-8"))));
             String epochTime = base58Encode(BigInteger.valueOf(epoch));
+
+            System.out.println(epoch);
+            System.out.println(epochTime);
 
             return digest.substring(1, 6) + epochTime;
         }
